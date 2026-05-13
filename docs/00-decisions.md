@@ -43,20 +43,33 @@
 ## 3. 아키텍처 방향
 
 ### 3.1 레이어 구조
-**클린 레이어드 아키텍처** 채택. 계층은 4개로 단순화:
+**헥사고날 / 클린 아키텍처 스타일** 채택. 도메인마다 5개 레이어로 분리:
 
 ```
-Controller (HTTP/REST) → Service (비즈니스 로직) → Repository (데이터 접근) → DB
-                            ↓
-                       Entity / DTO
+controller (HTTP) → application (UseCase, @Service) → domain (Entity, Repository 인터페이스)
+                                       ↑
+                            infrastructure (구현체, Spring 기술 디테일)
+                                       ↓
+                                  domain 인터페이스
 ```
 
-DDD, 헥사고날, CQRS 같은 고급 아키텍처는 채택하지 않음. MVP 범위에서 오버엔지니어링.
+| 레이어 | 책임 |
+|---|---|
+| `controller` | REST 진입점, DTO 입출력 (DTO는 `controller/dto/`) |
+| `application` | `@Service`, UseCase, 트랜잭션 경계 |
+| `domain` | `@Entity`, Repository 인터페이스, 도메인 인터페이스, enum, 값객체 — 순수 |
+| `infrastructure` | Spring 기술 디테일(Filter, Provider), 외부 어댑터, domain 인터페이스 구현체 |
+| `exception` | 도메인별 비즈니스 예외 (`ErrorCode`/Handler는 `global`) |
+
+자세한 트리 및 가이드는 [05-project-structure.md](05-project-structure.md) 참고.
 
 ### 3.2 패키지 구조 원칙
 - `global` (공통 인프라) + `domain` (도메인별 분리) 두 축
-- 한 도메인 폴더 안에 `controller`, `service`, `repository`, `entity`, `dto`, `enums` 하위 패키지
-- **하위 패키지는 처음부터 잘게 쪼개지 않음** — 한 폴더에 5~7개 파일 들어가기 전까진 그대로
+- 도메인 하위에 5개 레이어 폴더: `application`, `controller`, `domain`, `exception`, `infrastructure`
+- **DTO는 `controller/dto/`에 둠** (web concern 으로 본다)
+- **Repository 인터페이스는 `domain/`** (Spring Data JPA `extends JpaRepository`)
+- **인터페이스의 구현체는 `infrastructure/`** (예: `EncryptionService` → `NoOpEncryptionService`)
+- **JWT 관련은 `domain.auth.infrastructure/`** (인증 도메인의 기술 디테일)
 
 자세한 트리는 [05-project-structure.md](05-project-structure.md) 참고.
 
@@ -188,3 +201,4 @@ DDD, 헥사고날, CQRS 같은 고급 아키텍처는 채택하지 않음. MVP �
 | 날짜 | 내용 |
 |---|---|
 | 2026-05-13 | 초안 작성 (Sprint 1 결정) |
+| 2026-05-13 | 아키텍처를 헥사고날/클린 5-레이어 구조로 변경 (application/controller/domain/exception/infrastructure) |
