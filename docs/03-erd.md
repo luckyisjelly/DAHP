@@ -197,12 +197,17 @@ erDiagram
 | `created_at` | TIMESTAMP | NOT NULL | |
 | `updated_at` | TIMESTAMP | NOT NULL | |
 
-**HandoverConditionType enum** (MVP는 처음 두 개만 실제 사용):
-- `MANUAL_APPROVAL` ✅ MVP 핵심 (수동 trigger)
-- `SPECIFIC_DATE` ✅ (특정 날짜) — 평가는 수동 trigger
-- `INACTIVITY_PERIOD` ⏸ P2 (자동 평가 필요)
+**HandoverConditionType enum** (MVP는 3개 자동 평가):
+- `MANUAL_APPROVAL` ✅ MVP — 소유자가 수동 trigger 호출 시 발동
+- `SPECIFIC_DATE` ✅ MVP — `@Scheduled`가 지정 날짜 도래 시 자동 트리거
+- `INACTIVITY_PERIOD` ✅ MVP — `@Scheduled`가 사용자 lastCheckInAt 검사, N일 초과 시 자동 트리거
 - `PERIODIC_CHECK_FAILED` ⏸ P2
 - `EMERGENCY_REQUEST` ⏸ P2
+
+**conditionValue 포맷 예시**:
+- `MANUAL_APPROVAL`: null
+- `SPECIFIC_DATE`: ISO-8601 날짜 문자열 (예: `"2026-12-31"`)
+- `INACTIVITY_PERIOD`: 일수 문자열 (예: `"30"`)
 
 **HandoverRuleStatus enum**:
 - `DRAFT` (생성 직후)
@@ -334,3 +339,4 @@ MVP에서는 단순 String으로 시작 (e.g., `"30"`, `"2026-12-31"`).
 | 날짜 | 내용 |
 |---|---|
 | 2026-05-13 | 초안 작성 |
+| 2026-05-13 | HandoverConditionType MVP 범위 확장: INACTIVITY_PERIOD를 MVP에 포함, 자동 평가 스케줄러 추가 |

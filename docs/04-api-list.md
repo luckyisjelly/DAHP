@@ -479,8 +479,29 @@ ADMIN 권한만.
 
 ---
 
-## 6. 변경 이력
+## 6. 내부 스케줄러 (API 아님)
+
+API는 아니지만 백엔드에 함께 운영되는 비동기 작업.
+
+### 6.1 조건 평가 스케줄러
+- 클래스: `domain.handover.application.HandoverConditionEvaluator`
+- 실행 주기: `@Scheduled(cron = "0 0 * * * *")` (매시간 정각, 시연 시 단축 가능)
+- 동작:
+  1. `HandoverRuleRepository.findByStatus(ACTIVE)` 호출
+  2. 각 규칙의 conditionType 분기:
+     - `SPECIFIC_DATE`: now ≥ conditionValue(날짜) 이면 trigger
+     - `INACTIVITY_PERIOD`: owner.lastCheckInAt + conditionValue(일) < now 이면 trigger
+     - `MANUAL_APPROVAL`: 스킵
+  3. 조건 충족 시 수동 trigger 로직 재사용 (`HandoverRuleService.trigger()` 호출)
+
+### 6.2 시연용 short-interval 프로파일
+`application-demo.yml`에서 cron을 `*/10 * * * * *` (10초마다)로 단축 가능. condition_value도 분 단위로 설정해 시연 흐름 1분 이내 완결.
+
+---
+
+## 7. 변경 이력
 
 | 날짜 | 내용 |
 |---|---|
 | 2026-05-13 | 초안 작성 |
+| 2026-05-13 | 내부 스케줄러 섹션 추가 (INACTIVITY/SPECIFIC_DATE 자동 평가) |

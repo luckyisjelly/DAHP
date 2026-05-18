@@ -145,22 +145,34 @@ controller (HTTP) → application (UseCase, @Service) → domain (Entity, Reposi
 ### 5.1 포함
 - 사용자 인증 (가입, 로그인, JWT)
 - 디지털 자산 CRUD
-- 수령인 CRUD
-- 인계 규칙 CRUD (조건 정의만)
+- 수령인 CRUD (이메일/이름/관계 등)
+- 인계 규칙 CRUD
 - **수동 trigger** (`POST /handover-rules/{id}/trigger`)
-- HandoverEvent 생성 + accessToken 발급
-- 수령인 토큰 기반 자산 1회 조회
-- 수동 체크인 (lastCheckInAt 갱신)
+- **자동 조건 평가 스케줄러** (`@Scheduled`):
+  - `MANUAL_APPROVAL`: 수동 trigger만
+  - `SPECIFIC_DATE`: 지정 날짜 도래 시 자동 트리거
+  - `INACTIVITY_PERIOD`: 사용자가 N일 이상 미체크인 시 자동 트리거
+- HandoverEvent 생성 + accessToken 발급 (72시간 만료, 1회 사용)
+- 수령인 토큰 기반 자산 조회 (인증 없음, 토큰만)
+- 수동 체크인 (lastCheckInAt 갱신, 기본 주기 30일)
 - 콘솔 모킹 알림
 - 감사 로그 (Sprint 4)
 
 ### 5.2 제외 (P2 이후)
-- **자동 조건 평가 스케줄러** — INACTIVITY_PERIOD 등의 시간 조건 자동 평가. 시연 불가능하므로 수동 trigger로 대체
+- **조건 타입 일부**: `PERIODIC_CHECK_FAILED`, `EMERGENCY_REQUEST`
+- **수령인 OTP 추가 인증** — MVP는 토큰만으로 접근
+- **소셜 로그인** (Google/Kakao/Naver OAuth) — Spring Security OAuth2 client
 - **실제 이메일/SMS 발송** — `ConsoleNotificationService`로 모킹
 - **실제 암호화 구현** — 인터페이스만 준비
 - **파일 업로드** — 자산은 URL/텍스트 참조만 저장 (S3 통합 X)
 - **수령인 회원가입** — 수령인은 별도 엔티티, User role 아님
 - **다중 인스턴스 배포 / Redis** — 단일 인스턴스 가정
+
+### 5.3 시연 전략 (자동 평가 관련)
+스케줄러가 매시간 또는 매일 실행되므로 시연 중 INACTIVITY 30일을 기다릴 수 없음. 다음 전략 채택:
+- **시연용 프로파일**: `application-demo.yml`에서 스케줄러 주기를 **1분**으로 단축
+- 시연 직전에 INACTIVITY 규칙의 condition_value를 짧게(예: 1분) 설정
+- 또는 manual trigger API로 직접 보여줌 (가장 단순)
 
 ---
 
@@ -196,9 +208,68 @@ controller (HTTP) → application (UseCase, @Service) → domain (Entity, Reposi
 
 ---
 
-## 9. 변경 이력
+## 9. 개발 프로세스
+
+### 9.1 팀 규모
+**솔로 (1인 작업).** PR 리뷰는 자기 리뷰. 학습 목적상 PR 워크플로우는 유지.
+
+### 9.2 커밋 메시지 컨벤션
+**Conventional Commits 영문 타입 + 한글 본문.**
+
+타입:
+- `feat:` 새 기능
+- `fix:` 버그 수정
+- `docs:` 문서
+- `refactor:` 리팩터링 (기능 변화 없음)
+- `test:` 테스트 추가/수정
+- `chore:` 빌드/설정/잡일
+- `style:` 포맷팅, 코드 스타일
+
+형식:
+```
+<type>: <짧은 한글 요약>
+
+<상세 본문 (한글, 옵션)>
+```
+
+예시:
+```
+feat: 자산 CRUD API 구현
+
+POST/GET/PATCH/DELETE /api/assets 5개 엔드포인트 추가.
+소유자 검증 적용.
+```
+
+**Co-Authored-By: Claude 트레일러 추가 X.** 본인 단독 작성자.
+
+### 9.3 브랜치 전략
+**feature 브랜치 + PR (Squash merge).**
+
+- 기본 브랜치: `main`
+- 작업 브랜치: `feat/{도메인}-{기능}`, `fix/{이슈}`, `docs/{주제}` 등
+- 작업 완료 시 PR 생성 → 자기 리뷰 → **Squash merge** (1 PR = 1 main 커밋)
+- main 직접 push 지양 (긴급 hotfix 제외)
+
+예시:
+- `feat/auth-jwt`
+- `feat/asset-crud`
+- `feat/handover-rule-trigger`
+- `docs/sprint1-revisions`
+- `fix/asset-ownership-validation`
+
+### 9.4 코드 스타일
+- IntelliJ 기본 Java 포맷팅 (탭 X, 스페이스 4)
+- import 정렬: IntelliJ 기본
+- 한 줄 길이: 120자 권장
+- `final` 키워드 적극 사용 (불변성)
+- Lombok 사용 (`@RequiredArgsConstructor`, `@Getter` 위주, `@Data` 지양)
+
+---
+
+## 10. 변경 이력
 
 | 날짜 | 내용 |
 |---|---|
 | 2026-05-13 | 초안 작성 (Sprint 1 결정) |
 | 2026-05-13 | 아키텍처를 헥사고날/클린 5-레이어 구조로 변경 (application/controller/domain/exception/infrastructure) |
+| 2026-05-13 | MVP 범위 조정: 자동 조건 평가 스케줄러 포함, 소셜 로그인 P2로 이동. 개발 프로세스 섹션 추가 (솔로, Conventional Commits, feature 브랜치 + PR) |

@@ -83,10 +83,10 @@
 | F-RULE-01 | 인계 규칙 생성 (제목, 조건 타입, 자산 N개, 수령인 N명) | MVP |
 | F-RULE-02 | 규칙 목록/상세/수정/삭제 | MVP |
 | F-RULE-03 | 규칙 활성화/일시정지 (상태 전이) | MVP |
-| F-RULE-04 | 조건 타입: MANUAL_APPROVAL, SPECIFIC_DATE 지원 (수동 평가) | MVP |
+| F-RULE-04 | 조건 타입: MANUAL_APPROVAL, SPECIFIC_DATE, INACTIVITY_PERIOD 지원 | MVP |
 | F-RULE-05 | 규칙 생성 시 자산·수령인 소유자 일치 검증 | MVP |
-| F-RULE-06 | 조건 타입: INACTIVITY_PERIOD, PERIODIC_CHECK_FAILED, EMERGENCY_REQUEST | P2 |
-| F-RULE-07 | 자동 조건 평가 스케줄러 (`@Scheduled`) | P2 |
+| F-RULE-06 | 자동 조건 평가 스케줄러 (`@Scheduled`, SPECIFIC_DATE/INACTIVITY) | MVP (Sprint 3) |
+| F-RULE-07 | 조건 타입: PERIODIC_CHECK_FAILED, EMERGENCY_REQUEST | P2 |
 
 ### 2.6 인계 트리거 & 이벤트 (Sprint 3)
 | ID | 기능 | 우선순위 |
