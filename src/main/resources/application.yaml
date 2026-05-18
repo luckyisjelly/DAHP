@@ -16,6 +16,12 @@ springdoc:
   api-docs:
     path: /v3/api-docs
 
+dahp:
+  jwt:
+    secret: ${DAHP_JWT_SECRET:dahp-local-dev-secret-must-be-at-least-256-bits-long-do-not-use-in-prod}
+    access-token-validity: ${DAHP_JWT_ACCESS_VALIDITY:PT1H}
+    refresh-token-validity: ${DAHP_JWT_REFRESH_VALIDITY:P14D}
+
 logging:
   level:
     com.dahp: DEBUG
