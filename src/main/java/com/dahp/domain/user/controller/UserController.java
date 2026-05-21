@@ -37,6 +37,7 @@ public class UserController {
     public ApiResponse<UserResponse> updateMe(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestBody UpdateUserRequest request) {
-        return ApiResponse.ok(userService.updateMe(userDetails.getUserId(), request));
+        UserResponse updated = userService.updateMe(userDetails.getUserId(), request);
+        return ApiResponse.ok("내 정보가 수정되었습니다.", updated);
     }
 }

@@ -17,7 +17,7 @@ public class HealthController {
     @GetMapping
     @Operation(summary = "서버 헬스체크", description = "서버가 정상 응답하는지 확인합니다.")
     public ApiResponse<HealthStatus> health() {
-        return ApiResponse.ok(new HealthStatus("UP", "DAHP", OffsetDateTime.now()));
+        return ApiResponse.ok("DAHP 서버 정상 작동 중", new HealthStatus("UP", "DAHP", OffsetDateTime.now()));
     }
 
     public record HealthStatus(String status, String application, OffsetDateTime timestamp) {

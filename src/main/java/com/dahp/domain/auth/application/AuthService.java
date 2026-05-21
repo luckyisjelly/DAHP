@@ -26,7 +26,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
-    public Long signup(SignupRequest request) {
+    public User signup(SignupRequest request) {
         if (userRepository.existsByEmail(request.email())) {
             throw new BusinessException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
@@ -36,7 +36,7 @@ public class AuthService {
                 .role(UserRole.USER)
                 .checkInIntervalDays(request.checkInIntervalDays())
                 .build();
-        return userRepository.save(user).getId();
+        return userRepository.save(user);
     }
 
     @Transactional(readOnly = true)

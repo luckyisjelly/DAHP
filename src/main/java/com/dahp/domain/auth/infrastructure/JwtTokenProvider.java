@@ -44,7 +44,12 @@ public class JwtTokenProvider {
     public LoginResponse issueTokens(User user) {
         String accessToken = createAccessToken(user);
         String refreshToken = createRefreshToken(user);
-        return new LoginResponse(accessToken, refreshToken, accessTokenValidity.toSeconds());
+        return new LoginResponse(
+                accessToken,
+                refreshToken,
+                accessTokenValidity.toSeconds(),
+                LoginResponse.UserInfo.from(user)
+        );
     }
 
     public Long parseUserId(String token) {

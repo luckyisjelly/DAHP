@@ -43,9 +43,11 @@ public class AssetController {
     public ResponseEntity<ApiResponse<AssetResponse>> create(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestBody AssetCreateRequest request) {
+        AssetResponse created = assetService.create(userDetails.getUserId(), request);
+        String message = String.format("자산 '%s'이(가) 등록되었습니다. (id=%d)", created.title(), created.id());
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(ApiResponse.ok(assetService.create(userDetails.getUserId(), request)));
+                .body(ApiResponse.ok(message, created));
     }
 
     @GetMapping
@@ -55,7 +57,12 @@ public class AssetController {
             @RequestParam(required = false) AssetType type,
             @RequestParam(required = false) String q,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return ApiResponse.ok(assetService.list(userDetails.getUserId(), type, q, pageable));
+        PageResponse<AssetResponse> page = assetService.list(userDetails.getUserId(), type, q, pageable);
+        String message = String.format("총 %d건 중 %d~%d번째를 반환합니다.",
+                page.totalElements(),
+                page.totalElements() == 0 ? 0 : page.page() * page.size() + 1,
+                Math.min((long) (page.page() + 1) * page.size(), page.totalElements()));
+        return ApiResponse.ok(message, page);
     }
 
     @GetMapping("/{id}")
@@ -72,15 +79,16 @@ public class AssetController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long id,
             @Valid @RequestBody AssetUpdateRequest request) {
-        return ApiResponse.ok(assetService.update(userDetails.getUserId(), id, request));
+        AssetResponse updated = assetService.update(userDetails.getUserId(), id, request);
+        return ApiResponse.ok(String.format("자산 #%d이(가) 수정되었습니다.", id), updated);
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "자산 삭제")
-    public ResponseEntity<Void> delete(
+    public ApiResponse<Void> delete(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long id) {
         assetService.delete(userDetails.getUserId(), id);
-        return ResponseEntity.noContent().build();
+        return ApiResponse.ok(String.format("자산 #%d이(가) 삭제되었습니다.", id));
     }
 }
