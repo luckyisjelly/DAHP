@@ -6,9 +6,16 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
+import java.util.List;
+
 public interface AssetRepository extends JpaRepository<DigitalAsset, Long> {
 
     Page<DigitalAsset> findByOwnerId(Long ownerId, Pageable pageable);
+
+    List<DigitalAsset> findAllByIdInAndOwnerId(Collection<Long> ids, Long ownerId);
+
+    List<DigitalAsset> findAllByIdIn(Collection<Long> ids);
 
     Page<DigitalAsset> findByOwnerIdAndType(Long ownerId, AssetType type, Pageable pageable);
 
