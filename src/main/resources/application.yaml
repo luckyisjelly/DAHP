@@ -25,6 +25,8 @@ dahp:
     access-token-validity: ${DAHP_HANDOVER_TOKEN_VALIDITY:PT72H}
     evaluation-cron: ${DAHP_HANDOVER_EVAL_CRON:0 */1 * * * *}   # 1분마다 조건 평가
     expiry-cron: ${DAHP_HANDOVER_EXPIRY_CRON:0 */5 * * * *}     # 5분마다 만료 정리
+  cors:
+    allowed-origins: ${DAHP_CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}
 
 logging:
   level:
