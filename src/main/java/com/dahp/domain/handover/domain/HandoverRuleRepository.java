@@ -13,4 +13,6 @@ public interface HandoverRuleRepository extends JpaRepository<HandoverRule, Long
     Page<HandoverRule> findByOwnerIdAndStatus(Long ownerId, HandoverRuleStatus status, Pageable pageable);
 
     List<HandoverRule> findAllByStatus(HandoverRuleStatus status);
+
+    List<HandoverRule> findAllByOwnerIdAndStatus(Long ownerId, HandoverRuleStatus status);
 }

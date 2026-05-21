@@ -38,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 @Service
@@ -137,6 +138,19 @@ public class HandoverEventService {
             plainContent = encryptionService.decrypt(plainContent);
         }
         return HandoverAccessResponse.of(event, asset, plainContent, rule, owner);
+    }
+
+    /**
+     * 스케줄러용 — 만료된 활성 이벤트(PENDING/NOTIFIED)를 EXPIRED로 일괄 전이.
+     * @return 전이된 이벤트 수
+     */
+    public int expireOverdue() {
+        List<HandoverEvent> candidates = eventRepository.findAllByStatusInAndExpiresAtBefore(
+                EnumSet.of(HandoverEventStatus.PENDING, HandoverEventStatus.NOTIFIED),
+                LocalDateTime.now()
+        );
+        candidates.forEach(HandoverEvent::markExpired);
+        return candidates.size();
     }
 
     private HandoverEvent loadOwned(Long ownerId, Long eventId) {

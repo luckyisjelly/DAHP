@@ -21,6 +21,10 @@ dahp:
     secret: ${DAHP_JWT_SECRET:dahp-local-dev-secret-must-be-at-least-256-bits-long-do-not-use-in-prod}
     access-token-validity: ${DAHP_JWT_ACCESS_VALIDITY:PT1H}
     refresh-token-validity: ${DAHP_JWT_REFRESH_VALIDITY:P14D}
+  handover:
+    access-token-validity: ${DAHP_HANDOVER_TOKEN_VALIDITY:PT72H}
+    evaluation-cron: ${DAHP_HANDOVER_EVAL_CRON:0 */1 * * * *}   # 1분마다 조건 평가
+    expiry-cron: ${DAHP_HANDOVER_EXPIRY_CRON:0 */5 * * * *}     # 5분마다 만료 정리
 
 logging:
   level:
