@@ -4,6 +4,7 @@ import com.dahp.domain.handover.application.HandoverRuleService;
 import com.dahp.domain.handover.controller.dto.HandoverRuleCreateRequest;
 import com.dahp.domain.handover.controller.dto.HandoverRuleResponse;
 import com.dahp.domain.handover.controller.dto.HandoverRuleUpdateRequest;
+import com.dahp.domain.handover.controller.dto.HandoverTriggerResponse;
 import com.dahp.domain.handover.domain.HandoverRuleStatus;
 import com.dahp.global.response.ApiResponse;
 import com.dahp.global.response.PageResponse;
@@ -103,5 +104,19 @@ public class HandoverRuleController {
             @PathVariable Long id) {
         HandoverRuleResponse paused = ruleService.pause(userDetails.getUserId(), id);
         return ApiResponse.ok(String.format("인계 규칙 #%d이(가) 일시정지되었습니다.", id), paused);
+    }
+
+    @PostMapping("/{id}/trigger")
+    @Operation(summary = "인계 규칙 수동 트리거",
+            description = "ACTIVE 상태 규칙을 즉시 트리거. 자산×수령인 cross product로 이벤트가 생성되고 콘솔에 알림이 출력됩니다. 토큰 원본은 알림에만 노출됩니다.")
+    public ApiResponse<HandoverTriggerResponse> trigger(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long id) {
+        HandoverTriggerResponse triggered = ruleService.trigger(userDetails.getUserId(), id);
+        String message = String.format(
+                "인계 규칙 #%d 트리거됨. %d개의 인계 이벤트가 생성되어 콘솔(서버 로그)에 알림이 출력되었습니다. " +
+                        "토큰은 로그에서 확인 후 GET /api/handover-access/{token} 으로 접근하세요.",
+                id, triggered.eventCount());
+        return ApiResponse.ok(message, triggered);
     }
 }

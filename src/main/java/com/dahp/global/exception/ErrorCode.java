@@ -31,8 +31,10 @@ public enum ErrorCode {
     RULE_NOT_FOUND(HttpStatus.NOT_FOUND, "인계 규칙을 찾을 수 없습니다.", null),
     EVENT_NOT_FOUND(HttpStatus.NOT_FOUND, "인계 이벤트를 찾을 수 없습니다.", null),
     INVALID_STATE_TRANSITION(HttpStatus.CONFLICT, "허용되지 않은 상태 전이입니다.", "현재 상태에서 가능한 액션을 확인해주세요."),
+    INVALID_ACCESS_TOKEN(HttpStatus.NOT_FOUND, "유효하지 않은 접근 토큰입니다.", "이메일/메시지에 받은 정확한 링크인지 확인해주세요."),
     ACCESS_TOKEN_EXPIRED(HttpStatus.GONE, "접근 토큰이 만료되었습니다.", "자산 소유자에게 새 토큰을 요청해주세요."),
     ACCESS_TOKEN_USED(HttpStatus.GONE, "이미 사용된 접근 토큰입니다.", "토큰은 1회만 사용 가능합니다. 자산 소유자에게 새 토큰을 요청해주세요."),
+    ACCESS_TOKEN_CANCELLED(HttpStatus.GONE, "취소된 인계 이벤트의 접근 토큰입니다.", "자산 소유자가 이 인계를 취소했습니다."),
 
     // 공통 권한
     FORBIDDEN_RESOURCE(HttpStatus.FORBIDDEN, "해당 리소스에 접근할 권한이 없습니다.", "본인이 소유한 리소스만 조회/수정할 수 있습니다."),

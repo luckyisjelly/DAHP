@@ -5,6 +5,7 @@ import com.dahp.domain.asset.domain.DigitalAsset;
 import com.dahp.domain.handover.controller.dto.HandoverRuleCreateRequest;
 import com.dahp.domain.handover.controller.dto.HandoverRuleResponse;
 import com.dahp.domain.handover.controller.dto.HandoverRuleUpdateRequest;
+import com.dahp.domain.handover.controller.dto.HandoverTriggerResponse;
 import com.dahp.domain.handover.domain.HandoverRule;
 import com.dahp.domain.handover.domain.HandoverRuleAsset;
 import com.dahp.domain.handover.domain.HandoverRuleAssetRepository;
@@ -36,6 +37,7 @@ public class HandoverRuleService {
     private final HandoverRuleRecipientRepository ruleRecipientRepository;
     private final AssetRepository assetRepository;
     private final RecipientRepository recipientRepository;
+    private final HandoverEventService eventService;
 
     public HandoverRuleResponse create(Long ownerId, HandoverRuleCreateRequest request) {
         List<DigitalAsset> assets = loadOwnedAssets(ownerId, request.assetIds());
@@ -108,6 +110,16 @@ public class HandoverRuleService {
         HandoverRule rule = loadOwned(ownerId, ruleId);
         rule.pause();
         return toResponse(rule);
+    }
+
+    /**
+     * 수동 트리거 — ACTIVE 상태에서만 가능.
+     * rule.status를 TRIGGERED로 전이하고 cross-product 이벤트를 생성.
+     */
+    public HandoverTriggerResponse trigger(Long ownerId, Long ruleId) {
+        HandoverRule rule = loadOwned(ownerId, ruleId);
+        rule.markTriggered();
+        return eventService.createEventsFor(rule);
     }
 
     private HandoverRule loadOwned(Long ownerId, Long ruleId) {
