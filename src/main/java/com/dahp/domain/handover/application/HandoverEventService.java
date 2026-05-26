@@ -53,7 +53,7 @@ public class HandoverEventService {
     private final AssetRepository assetRepository;
     private final RecipientRepository recipientRepository;
     private final UserRepository userRepository;
-    private final NotificationService notificationService;
+    private final List<NotificationService> notificationServices;
     private final EncryptionService encryptionService;
 
     @Value("${dahp.handover.access-token-validity:PT72H}")
@@ -71,6 +71,8 @@ public class HandoverEventService {
 
         List<DigitalAsset> assets = assetRepository.findAllByIdIn(assetIds);
         List<Recipient> recipients = recipientRepository.findAllByIdIn(recipientIds);
+        User owner = userRepository.findById(rule.getOwnerId())
+                .orElseThrow(UserNotFoundException::new);
 
         LocalDateTime expiresAt = LocalDateTime.now().plus(accessTokenValidity);
         List<HandoverEventResponse> created = new ArrayList<>();
@@ -87,7 +89,7 @@ public class HandoverEventService {
                 );
                 eventRepository.save(event);
 
-                notificationService.notifyHandoverTriggered(recipient, asset, rule, rawToken, expiresAt);
+                broadcastNotify(recipient, asset, rule, owner, rawToken, expiresAt);
                 event.markNotified();
 
                 created.add(HandoverEventResponse.from(event));
@@ -95,6 +97,24 @@ public class HandoverEventService {
         }
 
         return new HandoverTriggerResponse(rule.getId(), rule.getStatus(), created.size(), created);
+    }
+
+    private void broadcastNotify(Recipient recipient,
+                                 DigitalAsset asset,
+                                 HandoverRule rule,
+                                 User owner,
+                                 String rawToken,
+                                 LocalDateTime expiresAt) {
+        for (NotificationService notifier : notificationServices) {
+            try {
+                notifier.notifyHandoverTriggered(recipient, asset, rule, owner, rawToken, expiresAt);
+            } catch (Exception e) {
+                // 알림 채널 1개가 실패해도 trigger 자체는 계속 진행
+                org.slf4j.LoggerFactory.getLogger(HandoverEventService.class)
+                        .error("Notifier {} 실패 (계속 진행): {}",
+                                notifier.getClass().getSimpleName(), e.getMessage(), e);
+            }
+        }
     }
 
     @Transactional(readOnly = true)

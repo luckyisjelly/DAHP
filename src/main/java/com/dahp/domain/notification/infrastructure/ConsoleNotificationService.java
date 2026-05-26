@@ -4,6 +4,7 @@ import com.dahp.domain.asset.domain.DigitalAsset;
 import com.dahp.domain.handover.domain.HandoverRule;
 import com.dahp.domain.notification.domain.NotificationService;
 import com.dahp.domain.recipient.domain.Recipient;
+import com.dahp.domain.user.domain.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -11,9 +12,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
- * MVP용 콘솔 알림 구현체.
- * 실제 이메일/SMS 발송 대신 System.out + 로그에 출력.
- * P2에서 SmtpNotificationService 등으로 교체.
+ * 항상 활성 (디버깅/시연 백업용). SMTP 발송과 별개로 서버 로그에도 토큰 출력.
  */
 @Slf4j
 @Component
@@ -25,12 +24,14 @@ public class ConsoleNotificationService implements NotificationService {
     public void notifyHandoverTriggered(Recipient recipient,
                                         DigitalAsset asset,
                                         HandoverRule rule,
+                                        User owner,
                                         String rawToken,
                                         LocalDateTime expiresAt) {
         String banner = "=".repeat(70);
         String body = """
                 %s
-                [NOTIFY] 인계 알림 (인계 규칙 '%s' 발동)
+                [NOTIFY/CONSOLE] 인계 알림 (인계 규칙 '%s' 발동)
+                  소유자  : %s
                   수령인  : %s <%s>
                   자산    : '%s' (id=%d, type=%s)
                   접근 링크: GET /api/handover-access/%s
@@ -39,6 +40,7 @@ public class ConsoleNotificationService implements NotificationService {
                 """.formatted(
                 banner,
                 rule.getTitle(),
+                owner.getEmail(),
                 recipient.getName(), recipient.getEmail(),
                 asset.getTitle(), asset.getId(), asset.getType(),
                 rawToken,
